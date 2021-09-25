@@ -21,14 +21,13 @@ app.config['SESSION_TYPE'] = 'mongodb'
 ns = api.namespace('go88', description='go88 operations')
 
 go88_model = api.model('go88', {
-    'id': fields.Integer(readonly=True, description='The task unique identifier'),
     'id_phien': fields.String(required=True, description='mã phiên'),
     'xx1': fields.Integer(required=True, description='number xx1'),
     'xx2': fields.Integer(required=True, description='number xx2'),
     'xx3': fields.Integer(required=True, description='number xx3'),
-    'rs_number': fields.Integer(required=True, description='kết quả'),
-    'rs_str': fields.String(required=True, description='kết quả tài/xỉu'),
-    'date_created': fields.String(required=True, description='thời gian tạo')
+    'rs_number': fields.Integer(readonly=True, description='kết quả'),
+    'rs_str': fields.String(readonly=True, description='kết quả tài/xỉu'),
+    'date_created': fields.String(readonly=True, description='thời gian tạo')
 })
 
 
@@ -44,12 +43,14 @@ class SibcboMD5(object):
         for sicbomd5 in self.lst_sicbomd5:
             if sicbomd5['id_phien'] == id_phien:
                 return sicbomd5
-        api.abort(404, "Todo {} doesn't exist".format(id_phien))
+        api.abort(404, "Phiên {} không tồn tại".format(id_phien))
 
     def create(self, data):
         sicbomd5 = data
         self.lst_sicbomd5.append(sicbomd5)
-        return sicbomd5
+        items = sicbomd5_create(sicbomd5)
+        # print(items)
+        return data
 
     def update(self, id, data):
         pass
@@ -73,42 +74,42 @@ class SicboList(Resource):
     @ns.doc('list_todos')
     @ns.marshal_list_with(go88_model)
     def get(self):
-        '''List all tasks'''
+        '''List all sicbomd5'''
         return DAOSicboMD5.lst_sicbomd5
 
     @ns.doc('create_sicbomd5')
     @ns.expect(go88_model)
     @ns.marshal_with(go88_model, code=201)
     def post(self):
-        '''Create a new task'''
+        '''Create a new sicbomd5'''
         return DAOSicboMD5.create(api.payload), 201
 
 
-@ns.route('/<int:id>')
-@ns.response(404, 'Todo not found')
-@ns.param('id', 'The task identifier')
+@ns.route('/<id_phien>')
+@ns.response(404, 'SicboMD5 not found')
+@ns.param('id_phien', 'Mã Phiên')
 class Sicbo(Resource):
     '''Show a single todo item and lets you delete them'''
 
     @ns.doc('get_sicbomd5')
     @ns.marshal_with(go88_model)
     def get(self, id_phien):
-        '''Fetch a given resource'''
+        '''get a sicbomd5'''
         return DAOSicboMD5.get(id_phien)
 
-    @ns.doc('delete_sicbomd5')
-    @ns.response(204, 'Sicbomd5 deleted')
-    def delete(self, id_phien):
-        '''Delete a task given its identifier'''
-        DAOSicboMD5.delete(id_phien)
-        return '', 204
-
-    @ns.expect(go88_model)
-    @ns.marshal_with(go88_model)
-    def put(self, id_phien):
-        '''Update a task given its identifier'''
-        return DAOSicboMD5.update(id_phien, api.payload)
+    # @ns.doc('delete_sicbomd5')
+    # @ns.response(204, 'Sicbomd5 deleted')
+    # def delete(self, id_phien):
+    #     '''Delete a sicbomd5'''
+    #     DAOSicboMD5.delete(id_phien)
+    #     return '', 204
+    #
+    # @ns.expect(go88_model)
+    # @ns.marshal_with(go88_model)
+    # def put(self, id_phien):
+    #     '''Update a sicbomd5'''
+    #     return DAOSicboMD5.update(id_phien, api.payload)
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True,host='0.0.0.0', port=9007)
