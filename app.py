@@ -3,6 +3,7 @@ from flask_restx import Api, Resource, fields
 from werkzeug.middleware.proxy_fix import ProxyFix
 from db import sicbomd5_get_all, sicbomd5_get, sicbomd5_create, sicbomd5_update, sicbomd5_delete
 
+
 app = Flask(__name__)
 app.app_context().push()
 app.wsgi_app = ProxyFix(app.wsgi_app)
@@ -20,11 +21,18 @@ app.config['SESSION_TYPE'] = 'mongodb'
 
 ns = api.namespace('go88', description='go88 operations')
 
+list_bs = api.model('list_bs', {
+    'eid': fields.Integer(required=True, description='1/2'),
+    'bc': fields.Integer(required=True, description='số lượng user'),
+    'v': fields.Integer(required=True, description='tiền')
+})
+
 go88_model = api.model('go88', {
     'id_phien': fields.String(required=True, description='mã phiên'),
     'xx1': fields.Integer(required=True, description='number xx1'),
     'xx2': fields.Integer(required=True, description='number xx2'),
     'xx3': fields.Integer(required=True, description='number xx3'),
+    'bs': fields.List(fields.Nested(list_bs),required=True, description='bs'),
     'rs_number': fields.Integer(readonly=True, description='kết quả'),
     'rs_str': fields.String(readonly=True, description='kết quả tài/xỉu'),
     'date_created': fields.String(readonly=True, description='thời gian tạo')
